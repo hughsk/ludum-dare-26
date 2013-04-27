@@ -29,12 +29,8 @@ Hub.prototype.render = function(ctx, manager) {
   var camera = manager.first('camera')
     , radius = this._radius - 10
 
-  ctx.fillStyle = 'rgba(0,255,0,0.25)'
-  ctx.strokeStyle = 'rgba(0,255,0,0.75)'
-  ctx.lineWidth = 0.65
+  ctx.fillStyle = 'rgba(201,255,80,0.35)'
   ctx.beginPath()
   ctx.arc(this.pos[0], this.pos[1], radius, 0, CIRCLE, false)
   ctx.fill()
-  ctx.stroke()
-  ctx.strokeStyle = 'none'
 }

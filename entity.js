@@ -11,3 +11,6 @@ inherits(Entity, EventEmitter)
 
 Entity.prototype.tick = function(){}
 Entity.prototype.render = function(){}
+Entity.prototype.kill = function() {
+  this.killing = true
+}

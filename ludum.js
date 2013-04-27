@@ -38,8 +38,8 @@ function Game(opts) {
   this.manager.register('hub', hub, ['safezone'])
 
   this.manager.add(this.hub = hub())
-  this.manager.add(player())
-  this.manager.add(camera())
+  this.manager.add(this.player = player())
+  this.manager.add(this.camera = camera())
   this.manager.add(sky())
   this.manager.add(pointer(this.hub.pos))
   for (var i = 0, l = 100; i < l; i += 1)
