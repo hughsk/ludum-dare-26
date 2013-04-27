@@ -1,0 +1,19 @@
+{
+  "name": "ludum-dare-26",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node_modules/.bin/beefy ludum.js --live -- -d"
+  },
+  "dependencies": {
+    "inherits": "~1.0.0",
+    "raf": "0.0.2",
+    "debounce": "0.0.2",
+    "vkey": "0.0.2",
+    "image-loaded": "0.0.2"
+  },
+  "devDependencies": {
+    "beefy": "~0.1.0",
+    "browserify": "~2.13.2"
+  }
+}
