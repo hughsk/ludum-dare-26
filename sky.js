@@ -49,6 +49,6 @@ Sky.prototype.time = function(time) {
 }
 
 Sky.prototype.tick = function(dt, manager) {
-  this.moment += 0.00001
+  this.moment += 0.000075
   this.color = this.time(this.moment)
 }
