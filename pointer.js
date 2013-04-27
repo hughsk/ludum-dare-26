@@ -36,9 +36,10 @@ Pointer.prototype.render = function(ctx, manager) {
     dummy[1] > 0 &&
     dummy[1] < height
   ) {
-    this.opacity *= 0.8
+    this.opacity -= 0.05
+    this.opacity = Math.max(0, this.opacity)
   } else {
-    this.opacity *= 1.2
+    this.opacity += 0.05
     this.opacity = Math.min(1, this.opacity)
   }
 
@@ -50,10 +51,9 @@ Pointer.prototype.render = function(ctx, manager) {
   ], width - 100, height - 100)
 
   ctx.globalAlpha = this.opacity
-  console.log(this.opacity)
   ctx.fillStyle = target[0] === 0 ? 'green' : 'yellow'
   ctx.save()
-  ctx.translate(edge[0] + 50, edge[1] + 50)
+  ctx.translate(edge[0] + 50 + camera.pos[0], edge[1] + 50 + camera.pos[1])
   ctx.rotate(-edge[2])
   ctx.drawImage(sprite, 0, 0)
   ctx.restore()

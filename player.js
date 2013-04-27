@@ -61,13 +61,11 @@ Player.prototype.tick = function(dt, manager) {
   this.pos[1] += this.spd[1]
   manager.game.playerAttractor[0] = this.pos[0]
   manager.game.playerAttractor[1] = this.pos[1]
-
-
 }
 
 Player.prototype.render = function(ctx, manager) {
   var camera = manager.first('camera')
-    , pos = camera.relative(this.pos)
+    , pos = this.pos
     , width = ctx.canvas.width
     , height = ctx.canvas.height
 

@@ -42,7 +42,7 @@ function Game(opts) {
   this.manager.add(camera())
   this.manager.add(sky())
   this.manager.add(pointer(this.hub.pos))
-  for (var i = 0, l = 200; i < l; i += 1)
+  for (var i = 0, l = 100; i < l; i += 1)
     this.manager.add(nag([Math.random()*100-50, Math.random()*100-50]))
 
   // i = 0; l = 10;
@@ -80,16 +80,20 @@ Game.prototype.resize = function() {
 
 Game.prototype.render = function(dt) {
   var ctx = this.context
+    , camera = this.manager.first('camera')
     , sky = this.manager.first('sky')
     , width = this.width
     , height = this.height
 
+  ctx.save()
   ctx.fillStyle = sky.color
   ctx.fillRect(0, 0, width, height)
 
   ctx.fillStyle = 'black'
-
+  ctx.translate(-camera.pos[0], -camera.pos[1])
   this.manager.render(ctx)
+
+  ctx.restore()
 }
 
 var game = module.exports = Game({

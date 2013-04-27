@@ -25,11 +25,9 @@ Nag.register = function(g) {
   game = g
 }
 
-var spareArray = [0,0]
 Nag.prototype.render = function(ctx, manager) {
   var camera = manager.first('camera')
 
   ctx.fillStyle = '#fff'
-  spareArray = camera.relative(this.pos, spareArray)
-  ctx.drawImage(sprite, spareArray[0] - 16, spareArray[1] - 16)
+  ctx.drawImage(sprite, this.pos[0] - 16, this.pos[1] - 16)
 }
