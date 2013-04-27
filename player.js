@@ -73,8 +73,4 @@ Player.prototype.render = function(ctx, manager) {
 
   ctx.fillStyle = '#f00'
   ctx.fillRect(pos[0], pos[1], 25, 25)
-
-  var center = camera.relative([0,0])
-  ctx.fillStyle = 'blue'
-  ctx.fillRect(center[0], center[1], 20, 20)
 }

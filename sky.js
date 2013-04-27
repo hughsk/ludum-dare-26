@@ -37,12 +37,18 @@ Sky.register = function(g) {
 Sky.prototype.time = function(time) {
   var data = this.data
     , length = data.length
-    , idx = (Math.floor(time * length / 4) * 4) % length
+    , idxA = (Math.floor(time * length / 4) * 4) % length
+    , idxB = (Math.floor(time * length / 4) * 4 + 4) % length
+    , mid = ((time * length / 4) % 1)
 
-  return 'rgb(' + [data[idx],data[idx+1],data[idx+2]].join(',') + ')'
+  return 'rgb(' + [
+      Math.round(data[idxA  ] + (data[idxB  ] - data[idxA  ]) * mid)
+    , Math.round(data[idxA+1] + (data[idxB+1] - data[idxA+1]) * mid)
+    , Math.round(data[idxA+2] + (data[idxB+2] - data[idxA+2]) * mid)
+  ].join(',') + ')'
 }
 
 Sky.prototype.tick = function(dt, manager) {
-  this.moment += 0.001
+  this.moment += 0.00001
   this.color = this.time(this.moment)
 }

@@ -25,7 +25,7 @@ function Game(opts) {
       boids: 0
     , speedLimit: 7
     , attractors: [this.playerAttractor = [0,0,500,0.25]]
-    , separationForce: 0.25
+    , separationForce: 0.2
     , separationDistance: 70
   })
 
@@ -35,21 +35,23 @@ function Game(opts) {
   this.manager.register('pointer', pointer)
   this.manager.register('sky', sky)
   this.manager.register('nag', nag)
+  this.manager.register('hub', hub, ['safezone'])
 
+  this.manager.add(this.hub = hub())
   this.manager.add(player())
   this.manager.add(camera())
   this.manager.add(sky())
-  this.manager.add(pointer())
-  // for (var i = 0, l = 100; i < l; i += 1)
-    // this.manager.add(nag([Math.random()*100-50, Math.random()*100-50]))
+  this.manager.add(pointer(this.hub.pos))
+  for (var i = 0, l = 200; i < l; i += 1)
+    this.manager.add(nag([Math.random()*100-50, Math.random()*100-50]))
 
-  i = 0; l = 10;
-  for (; i < l; i += 1) {
-    var randp = pointer()
-    randp.target[0] = Math.random() * 5000 - 2500
-    randp.target[1] = Math.random() * 5000 - 2500
-    this.manager.add(randp)
-  }
+  // i = 0; l = 10;
+  // for (; i < l; i += 1) {
+  //   var randp = pointer()
+  //   randp.target[0] = Math.random() * 5000 - 2500
+  //   randp.target[1] = Math.random() * 5000 - 2500
+  //   this.manager.add(randp)
+  // }
 
   this.element = document.createElement('canvas')
   this.context = this.element.getContext('2d')
