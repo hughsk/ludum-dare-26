@@ -28,6 +28,7 @@ function Player() {
   this.spawner = tic()
   this.collected = 0
   this.action = true
+  this.moved = false
 
   this.spawner.interval(function() {
     var angle = Math.random() * Math.PI * 2
@@ -82,7 +83,7 @@ Player.prototype.tick = function(dt, manager) {
     , boids = game.boids.boids
     , d = [0,0]
 
-  this.spawner.tick(dt)
+  if (this.moved) this.spawner.tick(dt)
 
   this.action = false
   for (var i = 0, l = actions.length; i < l; i += 1) {

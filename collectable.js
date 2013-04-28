@@ -21,8 +21,8 @@ function Collectable() {
 
   game.boids.attractors.push(
     this.pos = [
-        Math.sin(angle) * (counts * 500 + 800)
-      , Math.cos(angle) * (counts * 500 + 800)
+        Math.sin(angle) * (counts * 250 + 800)
+      , Math.cos(angle) * (counts * 250 + 800)
       , this._radius
       , -20
     ]
@@ -59,6 +59,7 @@ Collectable.prototype.doAction = function() {
   this.radius = 0
   sky.moment = Math.max(sky.moment - 0.1, 0)
   game.player.collected += 1
+  game.collected += 1
   game.roundCollected = true
   game.sounds.play('point', { volume: 100 })
   game.manager.add(chaser(game.player.pos.slice(0)))

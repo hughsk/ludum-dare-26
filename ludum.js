@@ -67,6 +67,8 @@ function Game(opts) {
   })
 
   this.round = 1
+  this.score = 0
+  this.collected = 0
   this.roundCollected = false
   this.manager = manager(this)
   this.manager.register('camera', camera)
@@ -87,6 +89,7 @@ function Game(opts) {
 
   this.element = document.createElement('canvas')
   this.context = this.element.getContext('2d')
+  this.context.setLineDash = this.context.setLineDash || function(){}
 
   this.sounds = soundManager
   this.sounds.createSound({
@@ -106,6 +109,13 @@ function Game(opts) {
   this.sounds.createSound({
       id: 'hub'
     , url: 'audio/hub.mp3'
+    , autoLoad: true
+    , autoPlay: false
+    , volume: 100
+  })
+  this.sounds.createSound({
+      id: 'chaser'
+    , url: 'audio/chaser.mp3'
     , autoLoad: true
     , autoPlay: false
     , volume: 100

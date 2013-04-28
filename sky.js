@@ -50,7 +50,9 @@ Sky.prototype.time = function(time) {
 }
 
 Sky.prototype.tick = function(dt, manager) {
-  this.moment += 0.000075
-  this._moment = this._moment + (this.moment - this._moment) * 0.008
+  if (game.player.moved) {
+    this.moment += 0.000075
+    this._moment = this._moment + (this.moment - this._moment) * 0.008
+  }
   this.color = this.time(this._moment)
 }
