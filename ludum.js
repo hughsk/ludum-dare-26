@@ -1,5 +1,12 @@
 require('./vendor/soundmanager2-nodebug-jsmin.js')
 
+var shader
+  , renderer
+  , tcam
+  , quad
+  , scene
+  , shaderTexture
+
 soundManager.setup({
     url: 'vendor/swf/'
   , useHighPerformance: true
@@ -7,10 +14,9 @@ soundManager.setup({
     var game = module.exports = Game({})
 
     raf(window)
-      .on('data', game.tick.bind(game))
-      .on('data', game.render.bind(game))
+      .on('data', function() { game.tick() })
+      .on('data', function() { game.render() })
 
-    // document.body.appendChild(game.element)
     document.body.style.padding = '0'
     document.body.style.margin = '0'
 
@@ -121,12 +127,18 @@ function Game(opts) {
     , volume: 100
   })
 
-  document.body.addEventListener('keyup', function(e) {
+  function keyup(e) {
     self.emit('keyup', vkey[e.keyCode], e)
-  })
-
-  document.body.addEventListener('keydown', function(e) {
+  }
+  function keydown(e) {
     self.emit('keydown', vkey[e.keyCode], e)
+  }
+
+  document.body.addEventListener('keyup', keyup)
+  document.body.addEventListener('keydown', keydown)
+  this.on('quitting', function() {
+    document.body.removeEventListener('keyup', keyup)
+    document.body.removeEventListener('keydown', keydown)
   })
 
   if (window.WebGLRenderingContext) {
@@ -134,6 +146,7 @@ function Game(opts) {
   } else {
     document.body.appendChild(this.element)
   }
+
   this.resize()
 }
 inherits(Game, EventEmitter)
@@ -174,7 +187,7 @@ Game.prototype.render = function(dt) {
 }
 
 Game.prototype.setupPostProcessing = function() {
-  this.shader = new three.ShaderMaterial({
+  this.shader = shader || new three.ShaderMaterial({
     fragmentShader: [
         'uniform sampler2D canvas;'
       , 'uniform float attacked;'
@@ -197,14 +210,38 @@ Game.prototype.setupPostProcessing = function() {
       , attacked: { type: 'f', value: 0 }
     }
   })
-  this.target = new three.WebGLRenderer
-  this.tcam = new three.OrthographicCamera(-1, 1, 1, -1, 0, 1)
-  this.tquad = new three.Mesh(new three.PlaneGeometry(2,2), this.shader)
-  this.tscene = new three.Scene
+  this.target = renderer = renderer || new three.WebGLRenderer
+  this.tcam = tcam = tcam || new three.OrthographicCamera(-1, 1, 1, -1, 0, 1)
+  this.tquad = quad = quad || new three.Mesh(new three.PlaneGeometry(2,2), this.shader)
+  this.tscene = scene = scene || new three.Scene
   this.tscene.add(this.tquad)
   this.target.setClearColor(0xff0000)
   this.target.clear()
-  this.shader.uniforms.canvas.value = new three.Texture(this.element)
-  this.shader.uniforms.canvas.value.needsUpdate = true
+  if (shaderTexture) {
+    this.shader.uniforms.canvas.value = shaderTexture
+    this.shader.uniforms.canvas.value.image = this.element
+  } else {
+    this.shader.uniforms.canvas.value = shaderTexture = shaderTexture || new three.Texture(this.element)
+    this.shader.uniforms.canvas.value.needsUpdate = true
+  }
   document.body.appendChild(this.target.domElement)
+}
+
+Game.prototype.end = function() {
+  var self = this
+
+  this.emit('quitting')
+
+  if (this.target) {
+    document.body.removeChild(this.target.domElement)
+  } else {
+    document.body.removeChild(this.element)
+  }
+
+  Object.keys(this).forEach(function(key) {
+    delete this[key]
+  })
+  Object.keys(Game.prototype).forEach(function(key) {
+    self[key] = function(){}
+  })
 }
