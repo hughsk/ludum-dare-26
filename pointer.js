@@ -18,6 +18,7 @@ function Pointer(target, islarge) {
   this.target = target || [0,0]
   this.opacity = 1
   this.large = !!islarge
+  this.enabled = true
 }
 inherits(Pointer, Entity)
 
@@ -34,12 +35,12 @@ Pointer.prototype.render = function(ctx, manager) {
 
   dummy = camera.relative(target, dummy)
 
-  if (
+  if (!this.enabled || (
     dummy[0] > 0 &&
     dummy[0] < width &&
     dummy[1] > 0 &&
     dummy[1] < height
-  ) {
+  )) {
     this.opacity -= 0.05
     this.opacity = Math.max(0, this.opacity)
   } else {

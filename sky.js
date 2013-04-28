@@ -16,7 +16,8 @@ function Sky() {
 
   this.color = 0x000000
   this.data = [0,0,0,1]
-  this.moment = 0.0
+  this.moment =
+  this._moment = 0
 
   imageloaded(gradient, function() {
     var canvas = document.createElement('canvas')
@@ -50,5 +51,6 @@ Sky.prototype.time = function(time) {
 
 Sky.prototype.tick = function(dt, manager) {
   this.moment += 0.000075
-  this.color = this.time(this.moment)
+  this._moment = this._moment + (this.moment - this._moment) * 0.008
+  this.color = this.time(this._moment)
 }

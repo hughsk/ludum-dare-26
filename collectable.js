@@ -26,7 +26,7 @@ function Collectable() {
       , -20
     ]
   )
-  game.manager.add(pointer(this.pos))
+  game.manager.add(this.pointer = pointer(this.pos))
   counts += 1
 }
 inherits(Collectable, Entity)
@@ -52,5 +52,14 @@ Collectable.prototype.render = function(ctx, manager) {
 }
 
 Collectable.prototype.doAction = function() {
+  var sky = game.manager.first('sky')
+
+  this.pointer.enabled = false
   this.radius = 0
+  sky.moment = Math.max(sky.moment - 0.1, 0)
+}
+
+Collectable.prototype.revive = function() {
+  this.pointer.enabled = true
+  this.radius = 150
 }

@@ -25,11 +25,12 @@ function Game(opts) {
   this.boids = boids({
       boids: 0
     , speedLimit: 7
-    , attractors: [this.playerAttractor = [0,0,500,0.25]]
+    , attractors: [this.playerAttractor = [0,0,1200,0.25]]
     , separationForce: 0.2
     , separationDistance: 70
   })
 
+  this.round = 1
   this.manager = manager(this)
   this.manager.register('camera', camera)
   this.manager.register('pointer', pointer)
@@ -45,19 +46,6 @@ function Game(opts) {
   this.manager.add(sky())
   this.manager.add(pointer(this.hub.pos, true))
   this.manager.add(collectable())
-  this.manager.add(collectable())
-  this.manager.add(collectable())
-  this.manager.add(collectable())
-  // for (var i = 0, l = 100; i < l; i += 1)
-  //   this.manager.add(nag([Math.random()*100-50, Math.random()*100-50]))
-
-  // i = 0; l = 10;
-  // for (; i < l; i += 1) {
-  //   var randp = pointer()
-  //   randp.target[0] = Math.random() * 5000 - 2500
-  //   randp.target[1] = Math.random() * 5000 - 2500
-  //   this.manager.add(randp)
-  // }
 
   this.element = document.createElement('canvas')
   this.context = this.element.getContext('2d')

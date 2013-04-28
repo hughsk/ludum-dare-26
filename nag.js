@@ -22,6 +22,9 @@ function Nag(pos, spd, acc) {
     , id: this.id = id++
   })
 
+  this.dying = false
+  this.scale = 1
+
   this.once('kill', function() {
     var idx = game.boids.boids.indexOf(self.data)
     if (idx !== -1) return game.boids.boids.splice(idx, 1)
@@ -68,6 +71,15 @@ function inRange(pos, chunkSize) {
   }
 }
 
+Nag.prototype.tick = function() {
+  if (this.dying) this.scale -= 0.05
+  if (this.scale < 0) {
+    this.scale = 0
+    this.dying = false
+    this.kill()
+  }
+}
+
 Nag.prototype.render = function(ctx, manager) {
   var camera = manager.first('camera')
 
@@ -78,6 +90,7 @@ Nag.prototype.render = function(ctx, manager) {
       this.spd[1]
     , this.spd[0]
   ))
+  if (this.scale !== 1) ctx.scale(this.scale, this.scale)
   ctx.drawImage(sprite, - 16, - 16)
   ctx.restore()
 }

@@ -34,7 +34,7 @@ function Player() {
         self.pos[0] + Math.sin(angle) * Math.max(game.width, game.height)
       , self.pos[1] + Math.cos(angle) * Math.max(game.width, game.height)
     ]))
-  }, 1000, 'Every')
+  }, 2500, 'Every')
 
   this.game.on('keydown', function(key) {
     switch (key) {
