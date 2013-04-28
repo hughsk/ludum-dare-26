@@ -300,6 +300,9 @@ soundManager.setup({
         document.body.removeChild(div)
         return false
       }
+      // Twitter Share Button
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
+      ;(('undefined' !== typeof twttr && twttr.widgets && twttr.widgets.load) || function(){})();
     }
   }
 })
@@ -539,7 +542,7 @@ Game.prototype.finish = function() {
   this.player.acc[1] = 0
 }
 
-},{"events":2,"./score.ejs":4,"./vendor/soundmanager2-nodebug-jsmin.js":5,"./collectable":6,"./manager":7,"./pointer":8,"./player":9,"./camera":10,"./chaser":11,"./nag":12,"./hub":13,"./sky":14,"three-copyshader":15,"inherits":16,"three":17,"boids":18,"vkey":19,"raf":20,"debounce":21}],15:[function(require,module,exports){
+},{"events":2,"./vendor/soundmanager2-nodebug-jsmin.js":4,"./score.ejs":5,"./collectable":6,"./manager":7,"./pointer":8,"./player":9,"./camera":10,"./chaser":11,"./nag":12,"./hub":13,"./sky":14,"three-copyshader":15,"inherits":16,"three":17,"boids":18,"vkey":19,"raf":20,"debounce":21}],15:[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  *
@@ -797,7 +800,7 @@ raf.now = now
 
 
 })()
-},{"events":2}],4:[function(require,module,exports){
+},{"events":2}],5:[function(require,module,exports){
 module.exports = (function anonymous(locals, filters, escape) {
 escape = escape || function (html){
   return String(html)
@@ -806,7 +809,7 @@ escape = escape || function (html){
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 };
-var __stack = { lineno: 1, input: "<div class=\"scores\">\n  <h1 class=\"header\"><span>>Final Score:</span></h1>\n  <h2 class=\"value\"><%= score %></h2>\n  <a href=\"\" data-playagain class=\"again\">Play Again</a>\n</div>\n", filename: "/Users/hughsk/Desktop/repos/ludumdare/score.ejs" };
+var __stack = { lineno: 1, input: "<div class=\"scores\">\n  <h1 class=\"header\"><span>>Final Score:</span></h1>\n  <h2 class=\"value\"><%= score %></h2>\n  <a href=\"\" data-playagain class=\"again\">Play Again</a>\n  <div class=\"tweeter\">\n    <a href=\"https://twitter.com/share?text=I%20just%20scored%20<%= score %>%20points%20in%20grow http://hughsk.github.io/ludum-dare-26\" class=\"twitter-share-button\" data-text=\"I just scored <%= score %> points in #grow\" data-via=\"hughskennedy\">Tweet</a>\n  </div>\n</div>\n", filename: "/Users/hughsk/Desktop/repos/ludumdare/score.ejs" };
 function rethrow(err, str, filename, lineno){
   var lines = str.split('\n')
     , start = Math.max(lineno - 3, 0)
@@ -833,7 +836,7 @@ function rethrow(err, str, filename, lineno){
 try {
 var buf = [];
 with (locals || {}) {
- buf.push('<div class="scores">\n  <h1 class="header"><span>>Final Score:</span></h1>\n  <h2 class="value">', escape((__stack.lineno=3,  score )), '</h2>\n  <a href="" data-playagain class="again">Play Again</a>\n</div>\n');
+ buf.push('<div class="scores">\n  <h1 class="header"><span>>Final Score:</span></h1>\n  <h2 class="value">', escape((__stack.lineno=3,  score )), '</h2>\n  <a href="" data-playagain class="again">Play Again</a>\n  <div class="tweeter">\n    <a href="https://twitter.com/share?text=I%20just%20scored%20', escape((__stack.lineno=6,  score )), '%20points%20in%20grow http://hughsk.github.io/ludum-dare-26" class="twitter-share-button" data-text="I just scored ', escape((__stack.lineno=6,  score )), ' points in #grow" data-via="hughskennedy">Tweet</a>\n  </div>\n</div>\n');
 }
 return buf.join('');
 } catch (err) {
@@ -37432,7 +37435,7 @@ if (typeof exports !== 'undefined') {
 }
 
 })(require("__browserify_process"))
-},{"__browserify_process":1}],5:[function(require,module,exports){
+},{"__browserify_process":1}],4:[function(require,module,exports){
 /** @license
  *
  * SoundManager 2: JavaScript Sound for the Web
@@ -37651,7 +37654,80 @@ Boids.prototype.tick = function() {
   this.emit('tick', boids)
 }
 
-},{"events":2,"inherits":22}],7:[function(require,module,exports){
+},{"events":2,"inherits":22}],6:[function(require,module,exports){
+var inherits = require('inherits')
+  , pointer = require('./pointer')
+  , chaser = require('./chaser')
+  , Entity = require('./entity')
+  , CIRCLE = Math.PI * 2
+  , counts = 1
+  , game
+
+module.exports = Collectable
+var sprite = new Image
+sprite.src = 'ring.png'
+
+function Collectable() {
+  if (!(this instanceof Collectable)) return new Collectable()
+  Entity.call(this)
+  if (!game) throw new Error('game not ready')
+  this.radius =
+  this._radius = 150
+
+  var angle = Math.random()*CIRCLE
+
+  game.boids.attractors.push(
+    this.pos = [
+        Math.sin(angle) * (counts * 250 + 800)
+      , Math.cos(angle) * (counts * 250 + 800)
+      , this._radius
+      , -20
+    ]
+  )
+  game.manager.add(this.pointer = pointer(this.pos))
+  counts += 1
+}
+inherits(Collectable, Entity)
+
+Collectable.register = function(g) {
+  game = g
+}
+
+Collectable.prototype.tick = function() {
+  this.pos[2] = this._radius = this._radius + (this.radius - this._radius) * 0.1
+}
+
+Collectable.prototype.render = function(ctx, manager) {
+  var camera = manager.first('camera')
+    , radius = this._radius / 150
+
+  ctx.save()
+  ctx.translate(this.pos[0], this.pos[1])
+  ctx.scale(radius, radius)
+  ctx.translate(-150, -150)
+  ctx.drawImage(sprite, 0, 0)
+  ctx.restore()
+}
+
+Collectable.prototype.doAction = function() {
+  var sky = game.manager.first('sky')
+
+  this.pointer.enabled = false
+  this.radius = 0
+  sky.moment = Math.max(sky.moment - 0.1, 0)
+  game.player.collected += 1
+  game.collected += 1
+  game.roundCollected = true
+  game.sounds.play('point', { volume: 100 })
+  game.manager.add(chaser(game.player.pos.slice(0)))
+}
+
+Collectable.prototype.revive = function() {
+  this.pointer.enabled = true
+  this.radius = 150
+}
+
+},{"./pointer":8,"./chaser":11,"./entity":23,"inherits":16}],7:[function(require,module,exports){
 var inherits = require('inherits')
   , EventEmitter = require('events').EventEmitter
 
@@ -37787,80 +37863,7 @@ Manager.prototype.updateChunks = function(x, y) {
   }
 }
 
-},{"events":2,"inherits":16}],6:[function(require,module,exports){
-var inherits = require('inherits')
-  , pointer = require('./pointer')
-  , chaser = require('./chaser')
-  , Entity = require('./entity')
-  , CIRCLE = Math.PI * 2
-  , counts = 1
-  , game
-
-module.exports = Collectable
-var sprite = new Image
-sprite.src = 'ring.png'
-
-function Collectable() {
-  if (!(this instanceof Collectable)) return new Collectable()
-  Entity.call(this)
-  if (!game) throw new Error('game not ready')
-  this.radius =
-  this._radius = 150
-
-  var angle = Math.random()*CIRCLE
-
-  game.boids.attractors.push(
-    this.pos = [
-        Math.sin(angle) * (counts * 250 + 800)
-      , Math.cos(angle) * (counts * 250 + 800)
-      , this._radius
-      , -20
-    ]
-  )
-  game.manager.add(this.pointer = pointer(this.pos))
-  counts += 1
-}
-inherits(Collectable, Entity)
-
-Collectable.register = function(g) {
-  game = g
-}
-
-Collectable.prototype.tick = function() {
-  this.pos[2] = this._radius = this._radius + (this.radius - this._radius) * 0.1
-}
-
-Collectable.prototype.render = function(ctx, manager) {
-  var camera = manager.first('camera')
-    , radius = this._radius / 150
-
-  ctx.save()
-  ctx.translate(this.pos[0], this.pos[1])
-  ctx.scale(radius, radius)
-  ctx.translate(-150, -150)
-  ctx.drawImage(sprite, 0, 0)
-  ctx.restore()
-}
-
-Collectable.prototype.doAction = function() {
-  var sky = game.manager.first('sky')
-
-  this.pointer.enabled = false
-  this.radius = 0
-  sky.moment = Math.max(sky.moment - 0.1, 0)
-  game.player.collected += 1
-  game.collected += 1
-  game.roundCollected = true
-  game.sounds.play('point', { volume: 100 })
-  game.manager.add(chaser(game.player.pos.slice(0)))
-}
-
-Collectable.prototype.revive = function() {
-  this.pointer.enabled = true
-  this.radius = 150
-}
-
-},{"./pointer":8,"./chaser":11,"./entity":23,"inherits":16}],8:[function(require,module,exports){
+},{"events":2,"inherits":16}],8:[function(require,module,exports){
 var inherits = require('inherits')
   , helpers = require('./helpers')
   , Entity = require('./entity')
@@ -38472,7 +38475,6 @@ Player.prototype.tick = function(dt, manager) {
         game.shader.uniforms.attacked.value = Math.max(0.01
           , game.shader.uniforms.attacked.value
         )
-        console.log(game.shader.uniforms.attacked)
       }
       this.spd[0] += Math.random() * 24 - 12
       this.spd[1] += Math.random() * 24 - 12
