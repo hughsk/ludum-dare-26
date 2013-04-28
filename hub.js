@@ -45,9 +45,14 @@ Hub.prototype.doAction = function(player) {
     , chunks = game.manager.chunks
 
   sky.moment = 0
-  this.radius = Math.max(25,this.radius-25)
+  this.radius = Math.max(
+      20
+    , this.radius - Math.max(25, game.round * 25 - 25)
+  )
   game.round += 1
   game.player.spawner._things[0].at = Math.pow(0.9, game.round) * 2500
+  game.boids.speedLimitRoot = Math.min(game.boids.speedLimit + 1, 9)
+  game.boids.speedLimit = game.boids.speedLimitRoot*game.boids.speedLimitRoot
 
   for (var i = 0, l = nag.length; i < l; i += 1) {
     nag[i].dying = true
@@ -55,7 +60,6 @@ Hub.prototype.doAction = function(player) {
 
   Object.keys(chunks).forEach(function(chunk) {
     chunk = chunks[chunk]
-    console.log(chunk)
     for (var i = 0, l = chunk.length; i < l; i += 1) {
       if (chunk[i].type !== 'nag') continue
       chunk.splice(i, 1)

@@ -1,6 +1,8 @@
 var EventEmitter = require('events').EventEmitter
+  , copyshader = require('three-copyshader')
   , inherits = require('inherits')
   , debounce = require('debounce')
+  , three = require('three')
   , boids = require('boids')
   , vkey = require('vkey')
   , raf = require('raf')
@@ -24,7 +26,7 @@ function Game(opts) {
 
   this.boids = boids({
       boids: 0
-    , speedLimit: 7
+    , speedLimit: 4
     , attractors: [this.playerAttractor = [0,0,1200,0.25]]
     , separationForce: 0.2
     , separationDistance: 70

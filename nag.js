@@ -84,13 +84,13 @@ Nag.prototype.render = function(ctx, manager) {
   var camera = manager.first('camera')
 
   ctx.fillStyle = '#fff'
-  ctx.save()
-  ctx.translate(this.pos[0], this.pos[1])
-  ctx.rotate(Math.atan(
-      this.spd[1]
-    , this.spd[0]
-  ))
-  if (this.scale !== 1) ctx.scale(this.scale, this.scale)
-  ctx.drawImage(sprite, - 16, - 16)
-  ctx.restore()
+  if (this.scale !== 1) {
+    ctx.save()
+    ctx.translate(this.pos[0], this.pos[1])
+    ctx.scale(this.scale, this.scale)
+    ctx.drawImage(sprite, -16, -16)
+    ctx.restore()
+  } else {
+    ctx.drawImage(sprite, this.pos[0]-16, this.pos[1]-16)
+  }
 }

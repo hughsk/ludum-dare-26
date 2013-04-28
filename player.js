@@ -26,11 +26,12 @@ function Player() {
   this.acc = [0,0]
   this.game = game
   this.spawner = tic()
+  this.collected = 0
   this.action = true
 
   this.spawner.interval(function() {
     var angle = Math.random() * Math.PI * 2
-    game.manager.add(nag([
+    if (game.boids.boids.length < 150) game.manager.add(nag([
         self.pos[0] + Math.sin(angle) * Math.max(game.width, game.height)
       , self.pos[1] + Math.cos(angle) * Math.max(game.width, game.height)
     ]))
@@ -86,6 +87,9 @@ Player.prototype.tick = function(dt, manager) {
   this.action = false
   for (var i = 0, l = actions.length; i < l; i += 1) {
     if (sqDist(actions[i].pos, this.pos) < actions[i].radius*actions[i].radius) {
+      if (actions[i]._type === 'hub' && this.collected > 0) {
+        this.cashout()
+      }
       this.action = actions[i]
     }
   }
@@ -135,4 +139,9 @@ Player.prototype.render = function(ctx, manager) {
   ctx.translate(pos[0] - 32, pos[1] - 32)
   ctx.drawImage(this.action ? action : sprite, 0, 0)
   ctx.restore()
+}
+
+Player.prototype.cashout = function() {
+  this.collected -= 1
+  game.hub.radius += 25
 }

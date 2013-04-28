@@ -57,6 +57,7 @@ Collectable.prototype.doAction = function() {
   this.pointer.enabled = false
   this.radius = 0
   sky.moment = Math.max(sky.moment - 0.1, 0)
+  game.player.collected += 1
 }
 
 Collectable.prototype.revive = function() {
