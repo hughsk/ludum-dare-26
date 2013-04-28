@@ -29,8 +29,16 @@ Hub.prototype.render = function(ctx, manager) {
   var camera = manager.first('camera')
     , radius = this._radius - 10
 
-  ctx.fillStyle = 'rgba(201,255,80,0.35)'
+  if (radius < 0) return
+
+  ctx.fillStyle = 'rgba(255,255,255,0.35)'
   ctx.beginPath()
   ctx.arc(this.pos[0], this.pos[1], radius, 0, CIRCLE, false)
   ctx.fill()
+}
+
+Hub.prototype.doAction = function(player) {
+  var sky = game.manager.first('sky')
+  sky.moment = 0
+  this.radius = Math.max(25,this.radius-25)
 }

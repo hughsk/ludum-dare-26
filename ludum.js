@@ -35,8 +35,8 @@ function Game(opts) {
   this.manager.register('pointer', pointer)
   this.manager.register('sky', sky)
   this.manager.register('nag', nag)
-  this.manager.register('hub', hub, ['safezone'])
-  this.manager.register('collectable', collectable, ['safezone'])
+  this.manager.register('hub', hub, ['safezone', 'actionable'])
+  this.manager.register('collectable', collectable, ['safezone', 'actionable'])
   this.manager.register('player', player)
 
   this.manager.add(this.hub = hub())
@@ -48,8 +48,8 @@ function Game(opts) {
   this.manager.add(collectable())
   this.manager.add(collectable())
   this.manager.add(collectable())
-  for (var i = 0, l = 100; i < l; i += 1)
-    this.manager.add(nag([Math.random()*100-50, Math.random()*100-50]))
+  // for (var i = 0, l = 100; i < l; i += 1)
+  //   this.manager.add(nag([Math.random()*100-50, Math.random()*100-50]))
 
   // i = 0; l = 10;
   // for (; i < l; i += 1) {

@@ -5,12 +5,12 @@ var inherits = require('inherits')
   , counts = 1
   , game
 
-module.exports = Hub
+module.exports = Collectable
 var sprite = new Image
-sprite.src = 'glow.png'
+sprite.src = 'ring.png'
 
-function Hub() {
-  if (!(this instanceof Hub)) return new Hub()
+function Collectable() {
+  if (!(this instanceof Collectable)) return new Collectable()
   Entity.call(this)
   if (!game) throw new Error('game not ready')
   this.radius =
@@ -29,26 +29,28 @@ function Hub() {
   game.manager.add(pointer(this.pos))
   counts += 1
 }
-inherits(Hub, Entity)
+inherits(Collectable, Entity)
 
-Hub.register = function(g) {
+Collectable.register = function(g) {
   game = g
 }
 
-Hub.prototype.tick = function() {
+Collectable.prototype.tick = function() {
   this.pos[2] = this._radius = this._radius + (this.radius - this._radius) * 0.1
 }
 
-Hub.prototype.render = function(ctx, manager) {
+Collectable.prototype.render = function(ctx, manager) {
   var camera = manager.first('camera')
-    , radius = this._radius - 10
+    , radius = this._radius / 150
 
-  ctx.fillStyle = 'rgba(201,255,80,0.35)'
-  ctx.beginPath()
-  ctx.arc(this.pos[0], this.pos[1], radius, 0, CIRCLE, false)
-  ctx.fill()
   ctx.save()
-  ctx.translate(-16, -16)
-  ctx.drawImage(sprite, this.pos[0], this.pos[1])
+  ctx.translate(this.pos[0], this.pos[1])
+  ctx.scale(radius, radius)
+  ctx.translate(-150, -150)
+  ctx.drawImage(sprite, 0, 0)
   ctx.restore()
+}
+
+Collectable.prototype.doAction = function() {
+  this.radius = 0
 }
