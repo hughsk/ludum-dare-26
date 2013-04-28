@@ -34,6 +34,7 @@ var collectable = require('./collectable')
   , pointer = require('./pointer')
   , player = require('./player')
   , camera = require('./camera')
+  , chaser = require('./chaser')
   , nag = require('./nag')
   , hub = require('./hub')
   , sky = require('./sky')
@@ -46,20 +47,33 @@ function Game(opts) {
 
   opts = opts || {}
 
+  this.playerAttractor = [0,0,1200,0.25]
+  this.chaserAttractor = [0,0,Infinity,0.5]
   this.boids = boids({
       boids: 0
     , speedLimit: 4
-    , attractors: [this.playerAttractor = [0,0,1200,0.25]]
+    , attractors: [this.playerAttractor]
     , separationForce: 0.2
     , separationDistance: 70
   })
 
+  this.chasers = boids({
+      boids: 0
+    , speedLimit: 10
+    , attractors: [this.chaserAttractor]
+    , separationDistance: 70
+    , separationForce: 0.2
+    , alignment: 0.3
+  })
+
   this.round = 1
+  this.roundCollected = false
   this.manager = manager(this)
   this.manager.register('camera', camera)
   this.manager.register('pointer', pointer)
   this.manager.register('sky', sky)
   this.manager.register('nag', nag)
+  this.manager.register('chaser', chaser)
   this.manager.register('hub', hub, ['safezone', 'actionable'])
   this.manager.register('collectable', collectable, ['safezone', 'actionable'])
   this.manager.register('player', player)
@@ -116,6 +130,7 @@ inherits(Game, EventEmitter)
 
 Game.prototype.tick = function(dt) {
   this.boids.tick(dt)
+  this.chasers.tick(dt)
   this.manager.tick(dt)
 }
 

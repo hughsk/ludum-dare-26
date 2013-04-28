@@ -28,7 +28,7 @@ function Nag(pos, spd, acc) {
   this.once('kill', function() {
     var idx = game.boids.boids.indexOf(self.data)
     if (idx !== -1) return game.boids.boids.splice(idx, 1)
-    for (var i = 0; i < l; i += 1) {
+    for (var i = 0, l = game.boids.boids.length; i < l; i += 1) {
       if (game.boids.boids[i].id === self.id) {
         return game.boids.boids.splice(i, 1)
       }
@@ -83,7 +83,6 @@ Nag.prototype.tick = function() {
 Nag.prototype.render = function(ctx, manager) {
   var camera = manager.first('camera')
 
-  ctx.fillStyle = '#fff'
   if (this.scale !== 1) {
     ctx.save()
     ctx.translate(this.pos[0], this.pos[1])

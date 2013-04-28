@@ -1,5 +1,6 @@
 var inherits = require('inherits')
   , pointer = require('./pointer')
+  , chaser = require('./chaser')
   , Entity = require('./entity')
   , CIRCLE = Math.PI * 2
   , counts = 1
@@ -58,7 +59,9 @@ Collectable.prototype.doAction = function() {
   this.radius = 0
   sky.moment = Math.max(sky.moment - 0.1, 0)
   game.player.collected += 1
+  game.roundCollected = true
   game.sounds.play('point', { volume: 100 })
+  game.manager.add(chaser(game.player.pos.slice(0)))
 }
 
 Collectable.prototype.revive = function() {

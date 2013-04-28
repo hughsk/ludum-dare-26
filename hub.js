@@ -5,6 +5,8 @@ var inherits = require('inherits')
   , game
 
 module.exports = Hub
+var title = new Image
+title.src = 'title.png'
 
 function Hub() {
   if (!(this instanceof Hub)) return new Hub()
@@ -23,6 +25,24 @@ Hub.register = function(g) {
 }
 
 Hub.prototype.tick = function() {
+  var chasers = game.manager.find('chaser')
+    , chaser
+    , x
+    , y
+
+  for (var i = 0, l = chasers.length; i < l; i += 1) {
+    chaser = chasers[i]
+    if (chaser.dying) continue
+    x = chaser.pos[0] - this.pos[0]
+    y = chaser.pos[1] - this.pos[0]
+    if (x*x+y*y < this._radius*this._radius) {
+      this.radius += 25
+      game.player.collected -= 1
+      chaser.dying = true
+      chaser.spd[0] = 0
+      chaser.spd[1] = 0
+    }
+  }
   this.pos[2] = this._radius = this._radius + (this.radius - this._radius) * 0.1
 }
 
@@ -36,6 +56,10 @@ Hub.prototype.render = function(ctx, manager) {
   ctx.beginPath()
   ctx.arc(this.pos[0], this.pos[1], radius, 0, CIRCLE, false)
   ctx.fill()
+  ctx.save()
+  ctx.translate(this.pos[0] - 125, this.pos[1] - 95 - radius)
+  ctx.drawImage(title, 0, 0)
+  ctx.restore()
 }
 
 Hub.prototype.doAction = function(player) {
@@ -52,6 +76,7 @@ Hub.prototype.doAction = function(player) {
     , this.radius - Math.max(25, game.round * 25 - 25)
   )
   game.round += 1
+  game.roundCollected = false
   game.player.spawner._things[0].at = Math.pow(0.9, game.round) * 2500
   game.boids.speedLimitRoot = Math.min(game.boids.speedLimit + 1, 9)
   game.boids.speedLimit = game.boids.speedLimitRoot*game.boids.speedLimitRoot

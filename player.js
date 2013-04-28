@@ -39,10 +39,10 @@ function Player() {
 
   this.game.on('keydown', function(key) {
     switch (key) {
-      case 'W': self.acc[1] -= movement; break
-      case 'A': self.acc[0] -= movement; break
-      case 'S': self.acc[1] += movement; break
-      case 'D': self.acc[0] += movement; break
+      case 'W': case '<up>':    self.acc[1] -= movement; break
+      case 'A': case '<left>':  self.acc[0] -= movement; break
+      case 'S': case '<down>':  self.acc[1] += movement; break
+      case 'D': case '<right>': self.acc[0] += movement; break
       case 'E': if (self.action) self.action.doAction(self); break
     }
   })
@@ -87,10 +87,9 @@ Player.prototype.tick = function(dt, manager) {
   this.action = false
   for (var i = 0, l = actions.length; i < l; i += 1) {
     if (sqDist(actions[i].pos, this.pos) < actions[i].radius*actions[i].radius) {
-      if (actions[i]._type === 'hub' && this.collected > 0) {
-        this.cashout()
+      if (actions[i]._type !== 'hub' || game.roundCollected) {
+        this.action = actions[i]
       }
-      this.action = actions[i]
     }
   }
 
@@ -127,6 +126,8 @@ Player.prototype.tick = function(dt, manager) {
   pos[1] += this.spd[1]
   game.playerAttractor[0] = pos[0]
   game.playerAttractor[1] = pos[1]
+  game.chaserAttractor[0] = pos[0]
+  game.chaserAttractor[1] = pos[1]
 }
 
 Player.prototype.render = function(ctx, manager) {
@@ -143,9 +144,4 @@ Player.prototype.render = function(ctx, manager) {
   ctx.translate(pos[0] - 32, pos[1] - 32)
   ctx.drawImage(this.action ? action : sprite, 0, 0)
   ctx.restore()
-}
-
-Player.prototype.cashout = function() {
-  this.collected -= 1
-  game.hub.radius += 25
 }
