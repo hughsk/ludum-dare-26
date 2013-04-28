@@ -242,7 +242,7 @@ Game.prototype.setupPostProcessing = function() {
         ,     ', texture2D(canvas, vUv).g'
         ,     ', texture2D(canvas, vUv + offset).b'
         , ');'
-        , "gl_FragColor = vec4( mix( texel.rgb, vec3( 1.0 - attacked * 100. ), dot( uv, uv ) ), 1.0 );"
+        , "gl_FragColor = vec4( mix( texel.rgb, vec3( 0.4 - attacked * 60. ), dot( uv, uv ) ), 1.0 );"
       , '}'
     ].join('\n'),
     vertexShader: copyshader.vertexShader,
