@@ -5,15 +5,19 @@ var inherits = require('inherits')
 
 module.exports = Pointer
 
-var sprite = new Image
-sprite.src = 'pointer.png'
-function Pointer(target) {
-  if (!(this instanceof Pointer)) return new Pointer(target)
+var large = new Image
+large.src = 'pointer.png'
+var small = new Image
+small.src = 'smallpointer.png'
+
+function Pointer(target, islarge) {
+  if (!(this instanceof Pointer)) return new Pointer(target, islarge)
   Entity.call(this)
   if (!game) throw new Error('game not ready')
 
   this.target = target || [0,0]
   this.opacity = 1
+  this.large = !!islarge
 }
 inherits(Pointer, Entity)
 
@@ -55,7 +59,7 @@ Pointer.prototype.render = function(ctx, manager) {
   ctx.save()
   ctx.translate(edge[0] + 50 + camera.pos[0], edge[1] + 50 + camera.pos[1])
   ctx.rotate(-edge[2])
-  ctx.drawImage(sprite, 0, 0)
+  ctx.drawImage(this.large ? large : small, 0, 0)
   ctx.restore()
   ctx.globalAlpha = 1
 }

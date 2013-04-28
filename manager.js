@@ -11,19 +11,10 @@ function Manager(game) {
   this.chunk = ''
   this.chunks = {}
   this.chunkRange = 2
-  this.chunkSize = 250
+  this.chunkSize = 800
   this.chunkList = []
   this.types = {}
   this.all = []
-
-  this.on('storeChunk', function(chunk) {
-    process.nextTick(function() {
-      console.log('store', chunk.length)
-    })
-  })
-  this.on('restoreChunk', function(chunk, pos) {
-    console.log('restore', chunk.length)
-  })
 }
 inherits(Manager, EventEmitter)
 

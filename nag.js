@@ -72,5 +72,12 @@ Nag.prototype.render = function(ctx, manager) {
   var camera = manager.first('camera')
 
   ctx.fillStyle = '#fff'
-  ctx.drawImage(sprite, this.pos[0] - 16, this.pos[1] - 16)
+  ctx.save()
+  ctx.translate(this.pos[0], this.pos[1])
+  ctx.rotate(Math.atan(
+      this.spd[1]
+    , this.spd[0]
+  ))
+  ctx.drawImage(sprite, - 16, - 16)
+  ctx.restore()
 }

@@ -6,6 +6,9 @@ var inherits = require('inherits')
 
 module.exports = Player
 
+var sprite = new Image
+sprite.src = 'player.png'
+
 function Player() {
   if (!(this instanceof Player)) return new Player()
   Entity.call(this)
@@ -93,6 +96,8 @@ Player.prototype.render = function(ctx, manager) {
     , width = ctx.canvas.width
     , height = ctx.canvas.height
 
-  ctx.fillStyle = '#f00'
-  ctx.fillRect(pos[0] - 12, pos[1] - 12, 24, 24)
+  ctx.save()
+  ctx.translate(pos[0] - 32, pos[1] - 32)
+  ctx.drawImage(sprite, 0, 0)
+  ctx.restore()
 }
