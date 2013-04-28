@@ -115,9 +115,10 @@ Player.prototype.tick = function(dt, manager) {
     if (d[0]*d[0]+d[1]*d[1] < 144) {
       game.camera.pos[0] += Math.random() * 24 - 12
       game.camera.pos[1] += Math.random() * 24 - 12
-      game.shader.uniforms.attacked.value = 0.01
+      if (game.shader) game.shader.uniforms.attacked.value = 0.01
       this.spd[0] += Math.random() * 24 - 12
       this.spd[1] += Math.random() * 24 - 12
+      game.sounds.play('nudge', { volume: 50 })
       sky.moment += 0.01
     }
   }
@@ -136,7 +137,7 @@ Player.prototype.render = function(ctx, manager) {
     , sky = manager.first('sky')
     , skycolor = sky.time(sky.moment)
 
-  game.shader.uniforms.attacked.value *= 0.95
+  if (game.shader) game.shader.uniforms.attacked.value *= 0.95
 
   ctx.save()
   ctx.translate(pos[0] - 32, pos[1] - 32)

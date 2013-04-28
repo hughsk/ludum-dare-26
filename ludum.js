@@ -1,3 +1,25 @@
+require('./vendor/soundmanager2-nodebug-jsmin.js')
+
+soundManager.setup({
+    url: 'vendor/swf/'
+  , useHighPerformance: true
+  , onready: function() {
+    var game = module.exports = Game({})
+
+    raf(window)
+      .on('data', game.tick.bind(game))
+      .on('data', game.render.bind(game))
+
+    // document.body.appendChild(game.element)
+    document.body.style.padding = '0'
+    document.body.style.margin = '0'
+
+    window.onresize = debounce(function() {
+      game.resize()
+    }, 50)
+  }
+})
+
 var EventEmitter = require('events').EventEmitter
   , copyshader = require('three-copyshader')
   , inherits = require('inherits')
@@ -52,6 +74,29 @@ function Game(opts) {
   this.element = document.createElement('canvas')
   this.context = this.element.getContext('2d')
 
+  this.sounds = soundManager
+  this.sounds.createSound({
+      id: 'nudge'
+    , url: 'audio/nudge.mp3'
+    , autoLoad: true
+    , autoPlay: false
+    , volume: 100
+  })
+  this.sounds.createSound({
+      id: 'point'
+    , url: 'audio/point2.mp3'
+    , autoLoad: true
+    , autoPlay: false
+    , volume: 100
+  })
+  this.sounds.createSound({
+      id: 'hub'
+    , url: 'audio/hub.mp3'
+    , autoLoad: true
+    , autoPlay: false
+    , volume: 100
+  })
+
   document.body.addEventListener('keyup', function(e) {
     self.emit('keyup', vkey[e.keyCode], e)
   })
@@ -60,7 +105,11 @@ function Game(opts) {
     self.emit('keydown', vkey[e.keyCode], e)
   })
 
-  this.setupPostProcessing()
+  if (window.WebGLRenderingContext) {
+    this.setupPostProcessing()
+  } else {
+    document.body.appendChild(this.element)
+  }
   this.resize()
 }
 inherits(Game, EventEmitter)
@@ -114,7 +163,7 @@ Game.prototype.setupPostProcessing = function() {
         ,     ', texture2D(canvas, vUv).g'
         ,     ', texture2D(canvas, vUv + offset).b'
         , ');'
-        , "gl_FragColor = vec4( mix( texel.rgb, vec3( 1.0 - attacked*100.0 ), dot( uv, uv ) ), 1.0 );"
+        , "gl_FragColor = vec4( mix( texel.rgb, vec3( 1.0 - attacked * 100. ), dot( uv, uv ) ), 1.0 );"
       , '}'
     ].join('\n'),
     vertexShader: copyshader.vertexShader,
@@ -134,19 +183,3 @@ Game.prototype.setupPostProcessing = function() {
   this.shader.uniforms.canvas.value.needsUpdate = true
   document.body.appendChild(this.target.domElement)
 }
-
-var game = module.exports = Game({
-
-})
-
-raf(window)
-  .on('data', game.tick.bind(game))
-  .on('data', game.render.bind(game))
-
-// document.body.appendChild(game.element)
-document.body.style.padding = '0'
-document.body.style.margin = '0'
-
-window.onresize = debounce(function() {
-  game.resize()
-}, 50)

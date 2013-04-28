@@ -58,6 +58,7 @@ Collectable.prototype.doAction = function() {
   this.radius = 0
   sky.moment = Math.max(sky.moment - 0.1, 0)
   game.player.collected += 1
+  game.sounds.play('point', { volume: 100 })
 }
 
 Collectable.prototype.revive = function() {

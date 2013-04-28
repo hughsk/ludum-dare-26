@@ -39,6 +39,8 @@ Hub.prototype.render = function(ctx, manager) {
 }
 
 Hub.prototype.doAction = function(player) {
+  game.sounds.play('hub')
+
   var sky = game.manager.first('sky')
     , nag = game.manager.find('nag')
     , collectables = game.manager.find('collectable')
