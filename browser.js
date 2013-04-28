@@ -424,7 +424,7 @@ inherits(Game, EventEmitter)
 
 Game.prototype.tick = function(dt) {
   if (this.finished) {
-    this.fadeout *= 0.98
+    this.fadeout *= 0.95
     var attacked = this.shader.uniforms.attacked
     attacked.value = Math.min(attacked.value+0.001, 0.02)
   }
@@ -809,7 +809,7 @@ escape = escape || function (html){
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 };
-var __stack = { lineno: 1, input: "<div class=\"scores\">\n  <h1 class=\"header\"><span>>Final Score:</span></h1>\n  <h2 class=\"value\"><%= score %></h2>\n  <a href=\"\" data-playagain class=\"again\">Play Again</a>\n  <div class=\"tweeter\">\n    <a href=\"https://twitter.com/share?text=I%20just%20scored%20<%= score %>%20points%20in%20grow http://hughsk.github.io/ludum-dare-26\" class=\"twitter-share-button\" data-text=\"I just scored <%= score %> points in #grow\" data-via=\"hughskennedy\">Tweet</a>\n  </div>\n</div>\n", filename: "/Users/hughsk/Desktop/repos/ludumdare/score.ejs" };
+var __stack = { lineno: 1, input: "<div class=\"scores\">\n  <h1 class=\"header\"><span>>Final Score:</span></h1>\n  <h2 class=\"value\"><%= score %></h2>\n  <a href=\"\" data-playagain class=\"again\">Play Again</a>\n  <div class=\"tweeter\">\n    <a href=\"https://twitter.com/share\" class=\"twitter-share-button\" data-text=\"I just scored <%= score %> points in #grow\" data-via=\"hughskennedy\">Tweet</a>\n  </div>\n</div>\n", filename: "/Users/hughsk/Desktop/repos/ludumdare/score.ejs" };
 function rethrow(err, str, filename, lineno){
   var lines = str.split('\n')
     , start = Math.max(lineno - 3, 0)
@@ -836,7 +836,7 @@ function rethrow(err, str, filename, lineno){
 try {
 var buf = [];
 with (locals || {}) {
- buf.push('<div class="scores">\n  <h1 class="header"><span>>Final Score:</span></h1>\n  <h2 class="value">', escape((__stack.lineno=3,  score )), '</h2>\n  <a href="" data-playagain class="again">Play Again</a>\n  <div class="tweeter">\n    <a href="https://twitter.com/share?text=I%20just%20scored%20', escape((__stack.lineno=6,  score )), '%20points%20in%20grow http://hughsk.github.io/ludum-dare-26" class="twitter-share-button" data-text="I just scored ', escape((__stack.lineno=6,  score )), ' points in #grow" data-via="hughskennedy">Tweet</a>\n  </div>\n</div>\n');
+ buf.push('<div class="scores">\n  <h1 class="header"><span>>Final Score:</span></h1>\n  <h2 class="value">', escape((__stack.lineno=3,  score )), '</h2>\n  <a href="" data-playagain class="again">Play Again</a>\n  <div class="tweeter">\n    <a href="https://twitter.com/share" class="twitter-share-button" data-text="I just scored ', escape((__stack.lineno=6,  score )), ' points in #grow" data-via="hughskennedy">Tweet</a>\n  </div>\n</div>\n');
 }
 return buf.join('');
 } catch (err) {
@@ -37931,7 +37931,42 @@ Pointer.prototype.render = function(ctx, manager) {
   ctx.globalAlpha = 1
 }
 
-},{"./helpers":24,"./entity":23,"inherits":16}],11:[function(require,module,exports){
+},{"./helpers":24,"./entity":23,"inherits":16}],10:[function(require,module,exports){
+var inherits = require('inherits')
+  , Entity = require('./entity')
+  , game
+
+module.exports = Camera
+
+function Camera() {
+  if (!(this instanceof Camera)) return new Camera()
+  Entity.call(this)
+  if (!game) throw new Error('game not ready')
+
+  this.pos = [-250,-250]
+}
+inherits(Camera, Entity)
+
+Camera.register = function(g) {
+  game = g
+}
+
+Camera.prototype.tick = function(dt, manager) {
+  var player = manager.first('player')
+    , game = manager.game
+
+  this.pos[0] = this.pos[0] + (player.pos[0] - game.width/2 - this.pos[0]) * 0.05
+  this.pos[1] = this.pos[1] + (player.pos[1] - game.height/2 - this.pos[1]) * 0.05
+}
+
+Camera.prototype.relative = function(pos, arr) {
+  arr = arr || []
+  arr[0] = pos[0] - this.pos[0]
+  arr[1] = pos[1] - this.pos[1]
+  return arr
+}
+
+},{"./entity":23,"inherits":16}],11:[function(require,module,exports){
 var inherits = require('inherits')
   , Entity = require('./entity')
   , imageloaded = require('image-loaded')
@@ -37998,42 +38033,7 @@ Chaser.prototype.render = function(ctx, manager) {
   }
 }
 
-},{"./entity":23,"inherits":16,"image-loaded":25}],10:[function(require,module,exports){
-var inherits = require('inherits')
-  , Entity = require('./entity')
-  , game
-
-module.exports = Camera
-
-function Camera() {
-  if (!(this instanceof Camera)) return new Camera()
-  Entity.call(this)
-  if (!game) throw new Error('game not ready')
-
-  this.pos = [-250,-250]
-}
-inherits(Camera, Entity)
-
-Camera.register = function(g) {
-  game = g
-}
-
-Camera.prototype.tick = function(dt, manager) {
-  var player = manager.first('player')
-    , game = manager.game
-
-  this.pos[0] = this.pos[0] + (player.pos[0] - game.width/2 - this.pos[0]) * 0.05
-  this.pos[1] = this.pos[1] + (player.pos[1] - game.height/2 - this.pos[1]) * 0.05
-}
-
-Camera.prototype.relative = function(pos, arr) {
-  arr = arr || []
-  arr[0] = pos[0] - this.pos[0]
-  arr[1] = pos[1] - this.pos[1]
-  return arr
-}
-
-},{"./entity":23,"inherits":16}],12:[function(require,module,exports){
+},{"./entity":23,"inherits":16,"image-loaded":25}],12:[function(require,module,exports){
 var inherits = require('inherits')
   , Entity = require('./entity')
   , imageloaded = require('image-loaded')
