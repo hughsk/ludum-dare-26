@@ -5,7 +5,11 @@ var imageloaded = require('image-loaded')
 
 module.exports = Sky
 
+var gradientLoaded = false
 var gradient = new Image
+imageloaded(gradient, function() {
+  gradientLoaded = true
+})
 gradient.src = 'sky.png'
 
 function Sky() {
@@ -36,6 +40,8 @@ Sky.register = function(g) {
 }
 
 Sky.prototype.time = function(time) {
+  if (!gradientLoaded) return 'rgb(99,164,252)'
+
   var data = this.data
     , length = data.length
     , idxA = Math.min(Math.floor(time * length / 4) * 4, length - 4)
