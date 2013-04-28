@@ -1,2 +1,6 @@
 node_modules
 *.log
+audio/*.wav
+.DS_Store
+browser.js
+bundle.js

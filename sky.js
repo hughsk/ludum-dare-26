@@ -17,7 +17,7 @@ function Sky() {
   this.color = 0x000000
   this.data = [0,0,0,1]
   this.moment =
-  this._moment = 0.99
+  this._moment = 0.4
 
   imageloaded(gradient, function() {
     var canvas = document.createElement('canvas')
