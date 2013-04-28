@@ -25,6 +25,7 @@ function Player() {
   this.spd = [0,0]
   this.acc = [0,0]
   this.game = game
+  this.scale = 1
   this.spawner = tic()
   this.collected = 0
   this.action = true
@@ -84,6 +85,7 @@ Player.prototype.tick = function(dt, manager) {
     , d = [0,0]
 
   if (this.moved) this.spawner.tick(dt)
+  if (game.finished) this.scale *= 0.95
 
   this.action = false
   for (var i = 0, l = actions.length; i < l; i += 1) {
@@ -115,7 +117,12 @@ Player.prototype.tick = function(dt, manager) {
     if (d[0]*d[0]+d[1]*d[1] < 144) {
       game.camera.pos[0] += Math.random() * 24 - 12
       game.camera.pos[1] += Math.random() * 24 - 12
-      if (game.shader) game.shader.uniforms.attacked.value = 0.01
+      if (game.shader) {
+        game.shader.uniforms.attacked.value = Math.max(0.01
+          , game.shader.uniforms.attacked.value
+        )
+        console.log(game.shader.uniforms.attacked)
+      }
       this.spd[0] += Math.random() * 24 - 12
       this.spd[1] += Math.random() * 24 - 12
       game.sounds.play('nudge', { volume: 50 })
@@ -142,7 +149,8 @@ Player.prototype.render = function(ctx, manager) {
   if (game.shader) game.shader.uniforms.attacked.value *= 0.95
 
   ctx.save()
-  ctx.translate(pos[0] - 32, pos[1] - 32)
-  ctx.drawImage(this.action ? action : sprite, 0, 0)
+  ctx.translate(pos[0], pos[1])
+  if (this.scale !== 1) ctx.scale(this.scale, this.scale)
+  ctx.drawImage(this.action ? action : sprite,  -32,  -32)
   ctx.restore()
 }

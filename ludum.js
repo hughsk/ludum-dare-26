@@ -6,25 +6,7 @@ var shader
   , quad
   , scene
   , shaderTexture
-
-soundManager.setup({
-    url: 'vendor/swf/'
-  , useHighPerformance: true
-  , onready: function() {
-    var game = module.exports = Game({})
-
-    raf(window)
-      .on('data', function() { game.tick() })
-      .on('data', function() { game.render() })
-
-    document.body.style.padding = '0'
-    document.body.style.margin = '0'
-
-    window.onresize = debounce(function() {
-      game.resize()
-    }, 50)
-  }
-})
+  , template = require('./score.ejs')
 
 var EventEmitter = require('events').EventEmitter
   , copyshader = require('three-copyshader')
@@ -44,6 +26,42 @@ var collectable = require('./collectable')
   , nag = require('./nag')
   , hub = require('./hub')
   , sky = require('./sky')
+
+soundManager.setup({
+    url: 'vendor/swf/'
+  , useHighPerformance: true
+  , onready: function() {
+    var game = module.exports = Game({})
+
+    raf(window)
+      .on('data', function(dt) { game.tick(dt) })
+      .on('data', function(dt) { game.render(dt) })
+
+    document.body.style.padding = '0'
+    document.body.style.margin = '0'
+    document.body.style.background = '#000'
+
+    window.onresize = debounce(function() {
+      game.resize()
+    }, 50)
+
+    game.once('quitting', quitting)
+    function quitting(score) {
+      var div = document.createElement('div')
+      div.innerHTML = template({
+        score: score
+      })
+      document.body.appendChild(div)
+      document.querySelector('[data-playagain]').onclick = function(e) {
+        game = module.exports = Game({})
+        game.once('quitting', quitting)
+        e.preventDefault()
+        document.body.removeChild(div)
+        return false
+      }
+    }
+  }
+})
 
 function Game(opts) {
   if (!(this instanceof Game)) return new Game(opts)
@@ -74,6 +92,8 @@ function Game(opts) {
 
   this.round = 1
   this.score = 0
+  this.fadeout = 1
+  this.finished = false
   this.collected = 0
   this.roundCollected = false
   this.manager = manager(this)
@@ -126,6 +146,13 @@ function Game(opts) {
     , autoPlay: false
     , volume: 100
   })
+  this.sounds.createSound({
+      id: 'finish'
+    , url: 'audio/finish.mp3'
+    , autoLoad: true
+    , autoPlay: false
+    , volume: 100
+  })
 
   function keyup(e) {
     self.emit('keyup', vkey[e.keyCode], e)
@@ -136,7 +163,7 @@ function Game(opts) {
 
   document.body.addEventListener('keyup', keyup)
   document.body.addEventListener('keydown', keydown)
-  this.on('quitting', function() {
+  this.on('finishing', function() {
     document.body.removeEventListener('keyup', keyup)
     document.body.removeEventListener('keydown', keydown)
   })
@@ -152,6 +179,11 @@ function Game(opts) {
 inherits(Game, EventEmitter)
 
 Game.prototype.tick = function(dt) {
+  if (this.finished) {
+    this.fadeout *= 0.98
+    var attacked = this.shader.uniforms.attacked
+    attacked.value = Math.min(attacked.value+0.001, 0.02)
+  }
   this.boids.tick(dt)
   this.chasers.tick(dt)
   this.manager.tick(dt)
@@ -173,21 +205,30 @@ Game.prototype.render = function(dt) {
   ctx.fillStyle = sky.color
   ctx.fillRect(0, 0, width, height)
 
-  ctx.fillStyle = 'black'
   ctx.translate(-camera.pos[0], -camera.pos[1])
   this.manager.render(ctx)
 
+  ctx.restore()
+
+  if (this.fadeout !== 1) {
+    ctx.fillStyle = 'black'
+    ctx.globalAlpha = 1 - this.fadeout
+    ctx.fillRect(0, 0, width, height)
+    ctx.globalAlpha = 1
+    if (this.fadeout < 0.001) {
+      this.end()
+    }
+  }
+
   if (this.target) {
-    this.target.setSize(this.width, this.height)
+    this.target.setSize(width, height)
     this.shader.uniforms.canvas.value.needsUpdate = true
     this.target.render(this.tscene, this.tcam)
   }
-
-  ctx.restore()
 }
 
 Game.prototype.setupPostProcessing = function() {
-  this.shader = shader || new three.ShaderMaterial({
+  this.shader = shader = shader || new three.ShaderMaterial({
     fragmentShader: [
         'uniform sampler2D canvas;'
       , 'uniform float attacked;'
@@ -224,13 +265,15 @@ Game.prototype.setupPostProcessing = function() {
     this.shader.uniforms.canvas.value = shaderTexture = shaderTexture || new three.Texture(this.element)
     this.shader.uniforms.canvas.value.needsUpdate = true
   }
+  this.shader.uniforms.attacked.value = 0
   document.body.appendChild(this.target.domElement)
 }
 
 Game.prototype.end = function() {
   var self = this
-
-  this.emit('quitting')
+  if (this.ended) return
+  this.ended = true
+  this.emit('quitting', this.score)
 
   if (this.target) {
     document.body.removeChild(this.target.domElement)
@@ -244,4 +287,13 @@ Game.prototype.end = function() {
   Object.keys(Game.prototype).forEach(function(key) {
     self[key] = function(){}
   })
+}
+
+Game.prototype.finish = function() {
+  if (this.finished) return
+  this.finished = true
+  this.sounds.play('finish')
+  this.emit('finishing')
+  this.player.acc[0] = 0
+  this.player.acc[1] = 0
 }

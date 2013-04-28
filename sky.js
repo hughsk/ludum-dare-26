@@ -17,7 +17,7 @@ function Sky() {
   this.color = 0x000000
   this.data = [0,0,0,1]
   this.moment =
-  this._moment = 0
+  this._moment = 0.99
 
   imageloaded(gradient, function() {
     var canvas = document.createElement('canvas')
@@ -38,8 +38,8 @@ Sky.register = function(g) {
 Sky.prototype.time = function(time) {
   var data = this.data
     , length = data.length
-    , idxA = (Math.floor(time * length / 4) * 4) % length
-    , idxB = (Math.floor(time * length / 4) * 4 + 4) % length
+    , idxA = Math.min(Math.floor(time * length / 4) * 4, length - 4)
+    , idxB = Math.min(Math.floor(time * length / 4) * 4 + 4, length - 4)
     , mid = ((time * length / 4) % 1)
 
   return 'rgb(' + [
@@ -55,4 +55,5 @@ Sky.prototype.tick = function(dt, manager) {
     this._moment = this._moment + (this.moment - this._moment) * 0.008
   }
   this.color = this.time(this._moment)
+  if (this._moment >= 1) game.finish()
 }

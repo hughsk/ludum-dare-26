@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node_modules/.bin/beefy ludum.js --live -- -d"
+    "start": "node_modules/.bin/beefy ludum.js --live -- -d -t ejsify"
   },
   "dependencies": {
     "inherits": "~1.0.0",
@@ -13,7 +13,8 @@
     "image-loaded": "0.0.2",
     "tic": "~0.2.0",
     "three-copyshader": "0.0.1",
-    "three": "~0.58.1"
+    "three": "~0.58.1",
+    "ejsify": "0.0.2"
   },
   "devDependencies": {
     "beefy": "~0.1.0",
