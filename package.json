@@ -11,7 +11,9 @@
     "debounce": "0.0.2",
     "vkey": "0.0.2",
     "image-loaded": "0.0.2",
-    "tic": "~0.2.0"
+    "tic": "~0.2.0",
+    "three-copyshader": "0.0.1",
+    "three": "~0.58.1"
   },
   "devDependencies": {
     "beefy": "~0.1.0",
