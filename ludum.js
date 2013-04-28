@@ -183,7 +183,7 @@ inherits(Game, EventEmitter)
 
 Game.prototype.tick = function(dt) {
   if (this.finished) {
-    this.fadeout *= 0.98
+    this.fadeout *= 0.95
     var attacked = this.shader.uniforms.attacked
     attacked.value = Math.min(attacked.value+0.001, 0.02)
   }
