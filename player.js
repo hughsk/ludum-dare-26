@@ -121,7 +121,6 @@ Player.prototype.tick = function(dt, manager) {
         game.shader.uniforms.attacked.value = Math.max(0.01
           , game.shader.uniforms.attacked.value
         )
-        console.log(game.shader.uniforms.attacked)
       }
       this.spd[0] += Math.random() * 24 - 12
       this.spd[1] += Math.random() * 24 - 12
