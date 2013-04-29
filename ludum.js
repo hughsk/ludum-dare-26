@@ -31,40 +31,84 @@ soundManager.setup({
     url: 'vendor/swf/'
   , useHighPerformance: true
   , onready: function() {
-    var game = module.exports = Game({})
-
-    raf(window)
-      .on('data', function(dt) { game.tick(dt) })
-      .on('data', function(dt) { game.render(dt) })
-
-    document.body.style.padding = '0'
-    document.body.style.margin = '0'
-    document.body.style.background = '#000'
-
-    window.onresize = debounce(function() {
-      game.resize()
-    }, 50)
-
-    game.once('quitting', quitting)
-    function quitting(score) {
-      var div = document.createElement('div')
-      div.innerHTML = template({
-        score: score
-      })
-      document.body.appendChild(div)
-      document.querySelector('[data-playagain]').onclick = function(e) {
-        game = module.exports = Game({})
-        game.once('quitting', quitting)
-        e.preventDefault()
-        document.body.removeChild(div)
-        return false
-      }
-      // Twitter Share Button
-      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
-      ;(('undefined' !== typeof twttr && twttr.widgets && twttr.widgets.load) || function(){})();
-    }
+    soundManager.createSound({
+        id: 'nudge'
+      , url: 'audio/nudge.mp3'
+      , autoLoad: true
+      , autoPlay: false
+      , volume: 100
+    })
+    soundManager.createSound({
+        id: 'point'
+      , url: 'audio/point2.mp3'
+      , autoLoad: true
+      , autoPlay: false
+      , volume: 100
+    })
+    soundManager.createSound({
+        id: 'hub'
+      , url: 'audio/hub.mp3'
+      , autoLoad: true
+      , autoPlay: false
+      , volume: 100
+    })
+    soundManager.createSound({
+        id: 'chaser'
+      , url: 'audio/chaser.mp3'
+      , autoLoad: true
+      , autoPlay: false
+      , volume: 100
+    })
+    soundManager.createSound({
+        id: 'finish'
+      , url: 'audio/finish.mp3'
+      , autoLoad: true
+      , autoPlay: false
+      , volume: 100
+    })
   }
 })
+
+var soundPlay = soundManager.play
+soundManager.play = function() {
+  if (!soundManager.supported()) return
+  soundPlay.apply(this, [].slice.call(arguments))
+}
+
+function gameready() {
+  var game = module.exports = Game({})
+
+  raf(window)
+    .on('data', function(dt) { game.tick(dt) })
+    .on('data', function(dt) { game.render(dt) })
+
+  document.body.style.padding = '0'
+  document.body.style.margin = '0'
+  document.body.style.background = '#000'
+
+  window.onresize = debounce(function() {
+    game.resize()
+  }, 50)
+
+  game.once('quitting', quitting)
+  function quitting(score) {
+    var div = document.createElement('div')
+    div.innerHTML = template({
+      score: score
+    })
+    document.body.appendChild(div)
+    document.querySelector('[data-playagain]').onclick = function(e) {
+      game = module.exports = Game({})
+      game.once('quitting', quitting)
+      e.preventDefault()
+      document.body.removeChild(div)
+      return false
+    }
+    // Twitter Share Button
+    !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
+    ;(('undefined' !== typeof twttr && twttr.widgets && twttr.widgets.load) || function(){})();
+  }
+}
 
 function Game(opts) {
   if (!(this instanceof Game)) return new Game(opts)
@@ -121,41 +165,6 @@ function Game(opts) {
   this.context.setLineDash = this.context.setLineDash || function(){}
 
   this.sounds = soundManager
-  this.sounds.createSound({
-      id: 'nudge'
-    , url: 'audio/nudge.mp3'
-    , autoLoad: true
-    , autoPlay: false
-    , volume: 100
-  })
-  this.sounds.createSound({
-      id: 'point'
-    , url: 'audio/point2.mp3'
-    , autoLoad: true
-    , autoPlay: false
-    , volume: 100
-  })
-  this.sounds.createSound({
-      id: 'hub'
-    , url: 'audio/hub.mp3'
-    , autoLoad: true
-    , autoPlay: false
-    , volume: 100
-  })
-  this.sounds.createSound({
-      id: 'chaser'
-    , url: 'audio/chaser.mp3'
-    , autoLoad: true
-    , autoPlay: false
-    , volume: 100
-  })
-  this.sounds.createSound({
-      id: 'finish'
-    , url: 'audio/finish.mp3'
-    , autoLoad: true
-    , autoPlay: false
-    , volume: 100
-  })
 
   function keyup(e) {
     self.emit('keyup', vkey[e.keyCode], e)
@@ -171,7 +180,11 @@ function Game(opts) {
     document.body.removeEventListener('keydown', keydown)
   })
 
-  if (window.WebGLRenderingContext) {
+  // Would be window.WebGLRenderingContext,
+  // but because of bugs and performance issues
+  // in other browsers it's just IE10+ and Chrome
+  // that get post-processing for now...
+  if (window.chrome || /MSIE\s1\d\.\d/.test(window.navigator && window.navigator.userAgent || '')) {
     this.setupPostProcessing()
   } else {
     document.body.appendChild(this.element)
@@ -184,8 +197,10 @@ inherits(Game, EventEmitter)
 Game.prototype.tick = function(dt) {
   if (this.finished) {
     this.fadeout *= 0.95
-    var attacked = this.shader.uniforms.attacked
-    attacked.value = Math.min(attacked.value+0.001, 0.02)
+    if (this.shader) {
+      var attacked = this.shader.uniforms.attacked
+      attacked.value = Math.min(attacked.value+0.001, 0.02)
+    }
   }
   this.boids.tick(dt)
   this.chasers.tick(dt)
@@ -300,3 +315,5 @@ Game.prototype.finish = function() {
   this.player.acc[0] = 0
   this.player.acc[1] = 0
 }
+
+gameready()
