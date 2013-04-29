@@ -15,18 +15,25 @@ function Chaser(pos, spd, acc) {
   if (!game) throw new Error('game not ready')
   var self = this
 
-  game.chasers.boids.push({
+  game.chasers.boids.push(this.data = {
       spd: this.spd = spd || [0,0]
     , pos: this.pos = pos || [0,0]
     , acc: this.acc = acc || [0,0]
     , id: this.id = id++
   })
 
+  this.pos[2] = 16
+  this.pos[3] = -15
+  game.boids.attractors.push(this.pos)
+
   this.dying = false
   this.scale = 1
 
   this.once('kill', function() {
-    var idx = game.chasers.boids.indexOf(self.data)
+    var idx = game.boids.attractors.indexOf(self.pos)
+    if (idx !== -1) game.boids.attractors.splice(idx, 1)
+
+    idx = game.chasers.boids.indexOf(self.data)
     if (idx !== -1) return game.chasers.boids.splice(idx, 1)
     for (var i = 0, l = game.chasers.boids.length; i < l; i += 1) {
       if (game.chasers.boids[i].id === self.id) {
