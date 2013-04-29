@@ -74,7 +74,7 @@ function Game(opts) {
 
   opts = opts || {}
 
-  this.playerAttractor = [0,0,1200,0.25]
+  this.playerAttractor = [0,0,Infinity,0.25]
   this.chaserAttractor = [0,0,Infinity,0.5]
   this.boids = boids({
       boids: 0
