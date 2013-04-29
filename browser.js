@@ -272,40 +272,84 @@ soundManager.setup({
     url: 'vendor/swf/'
   , useHighPerformance: true
   , onready: function() {
-    var game = module.exports = Game({})
-
-    raf(window)
-      .on('data', function(dt) { game.tick(dt) })
-      .on('data', function(dt) { game.render(dt) })
-
-    document.body.style.padding = '0'
-    document.body.style.margin = '0'
-    document.body.style.background = '#000'
-
-    window.onresize = debounce(function() {
-      game.resize()
-    }, 50)
-
-    game.once('quitting', quitting)
-    function quitting(score) {
-      var div = document.createElement('div')
-      div.innerHTML = template({
-        score: score
-      })
-      document.body.appendChild(div)
-      document.querySelector('[data-playagain]').onclick = function(e) {
-        game = module.exports = Game({})
-        game.once('quitting', quitting)
-        e.preventDefault()
-        document.body.removeChild(div)
-        return false
-      }
-      // Twitter Share Button
-      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
-      ;(('undefined' !== typeof twttr && twttr.widgets && twttr.widgets.load) || function(){})();
-    }
+    soundManager.createSound({
+        id: 'nudge'
+      , url: 'audio/nudge.mp3'
+      , autoLoad: true
+      , autoPlay: false
+      , volume: 100
+    })
+    soundManager.createSound({
+        id: 'point'
+      , url: 'audio/point2.mp3'
+      , autoLoad: true
+      , autoPlay: false
+      , volume: 100
+    })
+    soundManager.createSound({
+        id: 'hub'
+      , url: 'audio/hub.mp3'
+      , autoLoad: true
+      , autoPlay: false
+      , volume: 100
+    })
+    soundManager.createSound({
+        id: 'chaser'
+      , url: 'audio/chaser.mp3'
+      , autoLoad: true
+      , autoPlay: false
+      , volume: 100
+    })
+    soundManager.createSound({
+        id: 'finish'
+      , url: 'audio/finish.mp3'
+      , autoLoad: true
+      , autoPlay: false
+      , volume: 100
+    })
   }
 })
+
+var soundPlay = soundManager.play
+soundManager.play = function() {
+  if (!soundManager.supported()) return
+  soundPlay.apply(this, [].slice.call(arguments))
+}
+
+function gameready() {
+  var game = module.exports = Game({})
+
+  raf(window)
+    .on('data', function(dt) { game.tick(dt) })
+    .on('data', function(dt) { game.render(dt) })
+
+  document.body.style.padding = '0'
+  document.body.style.margin = '0'
+  document.body.style.background = '#000'
+
+  window.onresize = debounce(function() {
+    game.resize()
+  }, 50)
+
+  game.once('quitting', quitting)
+  function quitting(score) {
+    var div = document.createElement('div')
+    div.innerHTML = template({
+      score: score
+    })
+    document.body.appendChild(div)
+    document.querySelector('[data-playagain]').onclick = function(e) {
+      game = module.exports = Game({})
+      game.once('quitting', quitting)
+      e.preventDefault()
+      document.body.removeChild(div)
+      return false
+    }
+    // Twitter Share Button
+    !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
+    ;(('undefined' !== typeof twttr && twttr.widgets && twttr.widgets.load) || function(){})();
+  }
+}
 
 function Game(opts) {
   if (!(this instanceof Game)) return new Game(opts)
@@ -362,41 +406,6 @@ function Game(opts) {
   this.context.setLineDash = this.context.setLineDash || function(){}
 
   this.sounds = soundManager
-  this.sounds.createSound({
-      id: 'nudge'
-    , url: 'audio/nudge.mp3'
-    , autoLoad: true
-    , autoPlay: false
-    , volume: 100
-  })
-  this.sounds.createSound({
-      id: 'point'
-    , url: 'audio/point2.mp3'
-    , autoLoad: true
-    , autoPlay: false
-    , volume: 100
-  })
-  this.sounds.createSound({
-      id: 'hub'
-    , url: 'audio/hub.mp3'
-    , autoLoad: true
-    , autoPlay: false
-    , volume: 100
-  })
-  this.sounds.createSound({
-      id: 'chaser'
-    , url: 'audio/chaser.mp3'
-    , autoLoad: true
-    , autoPlay: false
-    , volume: 100
-  })
-  this.sounds.createSound({
-      id: 'finish'
-    , url: 'audio/finish.mp3'
-    , autoLoad: true
-    , autoPlay: false
-    , volume: 100
-  })
 
   function keyup(e) {
     self.emit('keyup', vkey[e.keyCode], e)
@@ -412,7 +421,11 @@ function Game(opts) {
     document.body.removeEventListener('keydown', keydown)
   })
 
-  if (window.WebGLRenderingContext) {
+  // Would be window.WebGLRenderingContext,
+  // but because of bugs and performance issues
+  // in other browsers it's just IE10+ and Chrome
+  // that get post-processing for now...
+  if (window.chrome || /MSIE\s1\d\.\d/.test(window.navigator && window.navigator.userAgent || '')) {
     this.setupPostProcessing()
   } else {
     document.body.appendChild(this.element)
@@ -425,8 +438,10 @@ inherits(Game, EventEmitter)
 Game.prototype.tick = function(dt) {
   if (this.finished) {
     this.fadeout *= 0.95
-    var attacked = this.shader.uniforms.attacked
-    attacked.value = Math.min(attacked.value+0.001, 0.02)
+    if (this.shader) {
+      var attacked = this.shader.uniforms.attacked
+      attacked.value = Math.min(attacked.value+0.001, 0.02)
+    }
   }
   this.boids.tick(dt)
   this.chasers.tick(dt)
@@ -542,7 +557,40 @@ Game.prototype.finish = function() {
   this.player.acc[1] = 0
 }
 
-},{"events":2,"./vendor/soundmanager2-nodebug-jsmin.js":4,"./score.ejs":5,"./collectable":6,"./manager":7,"./pointer":8,"./player":9,"./camera":10,"./chaser":11,"./nag":12,"./hub":13,"./sky":14,"three-copyshader":15,"inherits":16,"three":17,"boids":18,"vkey":19,"raf":20,"debounce":21}],15:[function(require,module,exports){
+gameready()
+
+},{"events":2,"./vendor/soundmanager2-nodebug-jsmin.js":4,"./score.ejs":5,"./collectable":6,"./manager":7,"./pointer":8,"./player":9,"./camera":10,"./chaser":11,"./nag":12,"./hub":13,"./sky":14,"inherits":15,"three-copyshader":16,"three":17,"boids":18,"vkey":19,"raf":20,"debounce":21}],15:[function(require,module,exports){
+module.exports = inherits
+
+function inherits (c, p, proto) {
+  proto = proto || {}
+  var e = {}
+  ;[c.prototype, proto].forEach(function (s) {
+    Object.getOwnPropertyNames(s).forEach(function (k) {
+      e[k] = Object.getOwnPropertyDescriptor(s, k)
+    })
+  })
+  c.prototype = Object.create(p.prototype, e)
+  c.super = p
+}
+
+//function Child () {
+//  Child.super.call(this)
+//  console.error([this
+//                ,this.constructor
+//                ,this.constructor === Child
+//                ,this.constructor.super === Parent
+//                ,Object.getPrototypeOf(this) === Child.prototype
+//                ,Object.getPrototypeOf(Object.getPrototypeOf(this))
+//                 === Parent.prototype
+//                ,this instanceof Child
+//                ,this instanceof Parent])
+//}
+//function Parent () {}
+//inherits(Child, Parent)
+//new Child
+
+},{}],16:[function(require,module,exports){
 /**
  * @author alteredq / http://alteredqualia.com/
  *
@@ -579,37 +627,6 @@ module.exports = {
     "}"
   ].join("\n")
 };
-
-},{}],16:[function(require,module,exports){
-module.exports = inherits
-
-function inherits (c, p, proto) {
-  proto = proto || {}
-  var e = {}
-  ;[c.prototype, proto].forEach(function (s) {
-    Object.getOwnPropertyNames(s).forEach(function (k) {
-      e[k] = Object.getOwnPropertyDescriptor(s, k)
-    })
-  })
-  c.prototype = Object.create(p.prototype, e)
-  c.super = p
-}
-
-//function Child () {
-//  Child.super.call(this)
-//  console.error([this
-//                ,this.constructor
-//                ,this.constructor === Child
-//                ,this.constructor.super === Parent
-//                ,Object.getPrototypeOf(this) === Child.prototype
-//                ,Object.getPrototypeOf(Object.getPrototypeOf(this))
-//                 === Parent.prototype
-//                ,this instanceof Child
-//                ,this instanceof Parent])
-//}
-//function Parent () {}
-//inherits(Child, Parent)
-//new Child
 
 },{}],19:[function(require,module,exports){
 (function(){var ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
@@ -37727,7 +37744,7 @@ Collectable.prototype.revive = function() {
   this.radius = 150
 }
 
-},{"./pointer":8,"./chaser":11,"./entity":23,"inherits":16}],7:[function(require,module,exports){
+},{"./pointer":8,"./chaser":11,"./entity":23,"inherits":15}],7:[function(require,module,exports){
 var inherits = require('inherits')
   , EventEmitter = require('events').EventEmitter
 
@@ -37863,7 +37880,7 @@ Manager.prototype.updateChunks = function(x, y) {
   }
 }
 
-},{"events":2,"inherits":16}],8:[function(require,module,exports){
+},{"events":2,"inherits":15}],8:[function(require,module,exports){
 var inherits = require('inherits')
   , helpers = require('./helpers')
   , Entity = require('./entity')
@@ -37931,7 +37948,7 @@ Pointer.prototype.render = function(ctx, manager) {
   ctx.globalAlpha = 1
 }
 
-},{"./helpers":24,"./entity":23,"inherits":16}],10:[function(require,module,exports){
+},{"./helpers":24,"./entity":23,"inherits":15}],10:[function(require,module,exports){
 var inherits = require('inherits')
   , Entity = require('./entity')
   , game
@@ -37966,7 +37983,7 @@ Camera.prototype.relative = function(pos, arr) {
   return arr
 }
 
-},{"./entity":23,"inherits":16}],11:[function(require,module,exports){
+},{"./entity":23,"inherits":15}],11:[function(require,module,exports){
 var inherits = require('inherits')
   , Entity = require('./entity')
   , imageloaded = require('image-loaded')
@@ -38040,104 +38057,7 @@ Chaser.prototype.render = function(ctx, manager) {
   }
 }
 
-},{"./entity":23,"inherits":16,"image-loaded":25}],12:[function(require,module,exports){
-var inherits = require('inherits')
-  , Entity = require('./entity')
-  , imageloaded = require('image-loaded')
-  , game
-  , id = 0
-
-module.exports = Nag
-
-var sprite = new Image
-sprite.src = 'glow.png'
-
-function Nag(pos, spd, acc) {
-  if (!(this instanceof Nag)) return new Nag(pos, spd, acc)
-  Entity.call(this)
-  if (!game) throw new Error('game not ready')
-  var self = this
-
-  game.boids.boids.push(this.data = {
-      spd: this.spd = spd || [0,0]
-    , pos: this.pos = pos || [0,0]
-    , acc: this.acc = acc || [0,0]
-    , id: this.id = id++
-  })
-
-  this.dying = false
-  this.scale = 1
-
-  this.once('kill', function() {
-    var idx = game.boids.boids.indexOf(self.data)
-    if (idx !== -1) return game.boids.boids.splice(idx, 1)
-    for (var i = 0, l = game.boids.boids.length; i < l; i += 1) {
-      if (game.boids.boids[i].id === self.id) {
-        return game.boids.boids.splice(i, 1)
-      }
-    }
-  })
-}
-inherits(Nag, Entity)
-
-Nag.register = function(g) {
-  game = g
-  var manager = game.manager
-
-  manager.on('storeChunk', function(chunk, pos) {
-    chunk.push.apply(chunk, manager
-      .find('nag')
-      .filter(inRange(pos, manager.chunkSize))
-      .map(function(nag) {
-        nag.kill()
-        return { type: 'nag', pos: nag.pos }
-      })
-    )
-  })
-  manager.on('restoreChunk', function(chunk, pos) {
-    for (var i = 0, l = chunk.length; i < l; i += 1) {
-      if (chunk[i].type !== 'nag') continue
-      manager.add(new Nag(chunk[i].pos))
-    }
-  })
-}
-
-function inRange(pos, chunkSize) {
-  return function(nag) {
-    var x = nag.pos[0] - pos[0]*chunkSize
-      , y = nag.pos[1] - pos[1]*chunkSize
-
-    return (!nag.killed &&
-      x > 0 && x < chunkSize &&
-      y > 0 && y < chunkSize
-    )
-  }
-}
-
-Nag.prototype.tick = function() {
-  if (this.dying) this.scale -= 0.05
-  if (this.scale < 0) {
-    this.scale = 0
-    this.dying = false
-    this.kill()
-  }
-}
-
-Nag.prototype.render = function(ctx, manager) {
-  var camera = manager.first('camera')
-
-  if (this.scale !== 1) {
-    ctx.save()
-    ctx.translate(this.pos[0], this.pos[1])
-    ctx.scale(this.scale, this.scale)
-    ctx.drawImage(sprite, -16, -16)
-    ctx.restore()
-  } else {
-    ctx.drawImage(sprite, this.pos[0]-16, this.pos[1]-16)
-  }
-}
-
-},{"./entity":23,"inherits":16,"image-loaded":25}],13:[function(require,module,exports){
+},{"./entity":23,"inherits":15,"image-loaded":25}],13:[function(require,module,exports){
 var inherits = require('inherits')
   , Entity = require('./entity')
   , collectable = require('./collectable')
@@ -38297,7 +38217,7 @@ Hub.prototype.doAction = function(player) {
   game.manager.add(collectable())
 }
 
-},{"./entity":23,"./collectable":6,"inherits":16}],14:[function(require,module,exports){
+},{"./entity":23,"./collectable":6,"inherits":15}],14:[function(require,module,exports){
 var imageloaded = require('image-loaded')
   , inherits = require('inherits')
   , Entity = require('./entity')
@@ -38364,7 +38284,104 @@ Sky.prototype.tick = function(dt, manager) {
   if (this._moment >= 1) game.finish()
 }
 
-},{"./entity":23,"image-loaded":25,"inherits":16}],9:[function(require,module,exports){
+},{"./entity":23,"image-loaded":25,"inherits":15}],12:[function(require,module,exports){
+var inherits = require('inherits')
+  , Entity = require('./entity')
+  , imageloaded = require('image-loaded')
+  , game
+  , id = 0
+
+module.exports = Nag
+
+var sprite = new Image
+sprite.src = 'glow.png'
+
+function Nag(pos, spd, acc) {
+  if (!(this instanceof Nag)) return new Nag(pos, spd, acc)
+  Entity.call(this)
+  if (!game) throw new Error('game not ready')
+  var self = this
+
+  game.boids.boids.push(this.data = {
+      spd: this.spd = spd || [0,0]
+    , pos: this.pos = pos || [0,0]
+    , acc: this.acc = acc || [0,0]
+    , id: this.id = id++
+  })
+
+  this.dying = false
+  this.scale = 1
+
+  this.once('kill', function() {
+    var idx = game.boids.boids.indexOf(self.data)
+    if (idx !== -1) return game.boids.boids.splice(idx, 1)
+    for (var i = 0, l = game.boids.boids.length; i < l; i += 1) {
+      if (game.boids.boids[i].id === self.id) {
+        return game.boids.boids.splice(i, 1)
+      }
+    }
+  })
+}
+inherits(Nag, Entity)
+
+Nag.register = function(g) {
+  game = g
+  var manager = game.manager
+
+  manager.on('storeChunk', function(chunk, pos) {
+    chunk.push.apply(chunk, manager
+      .find('nag')
+      .filter(inRange(pos, manager.chunkSize))
+      .map(function(nag) {
+        nag.kill()
+        return { type: 'nag', pos: nag.pos }
+      })
+    )
+  })
+  manager.on('restoreChunk', function(chunk, pos) {
+    for (var i = 0, l = chunk.length; i < l; i += 1) {
+      if (chunk[i].type !== 'nag') continue
+      manager.add(new Nag(chunk[i].pos))
+    }
+  })
+}
+
+function inRange(pos, chunkSize) {
+  return function(nag) {
+    var x = nag.pos[0] - pos[0]*chunkSize
+      , y = nag.pos[1] - pos[1]*chunkSize
+
+    return (!nag.killed &&
+      x > 0 && x < chunkSize &&
+      y > 0 && y < chunkSize
+    )
+  }
+}
+
+Nag.prototype.tick = function() {
+  if (this.dying) this.scale -= 0.05
+  if (this.scale < 0) {
+    this.scale = 0
+    this.dying = false
+    this.kill()
+  }
+}
+
+Nag.prototype.render = function(ctx, manager) {
+  var camera = manager.first('camera')
+
+  if (this.scale !== 1) {
+    ctx.save()
+    ctx.translate(this.pos[0], this.pos[1])
+    ctx.scale(this.scale, this.scale)
+    ctx.drawImage(sprite, -16, -16)
+    ctx.restore()
+  } else {
+    ctx.drawImage(sprite, this.pos[0]-16, this.pos[1]-16)
+  }
+}
+
+},{"./entity":23,"inherits":15,"image-loaded":25}],9:[function(require,module,exports){
 var inherits = require('inherits')
   , helpers = require('./helpers')
   , nag = require('./nag')
@@ -38521,7 +38538,7 @@ Player.prototype.render = function(ctx, manager) {
   ctx.restore()
 }
 
-},{"./helpers":24,"./nag":12,"./entity":23,"inherits":16,"vkey":19,"tic":26}],22:[function(require,module,exports){
+},{"./helpers":24,"./nag":12,"./entity":23,"inherits":15,"vkey":19,"tic":26}],22:[function(require,module,exports){
 module.exports = inherits
 
 function inherits (c, p, proto) {
@@ -38681,5 +38698,5 @@ Entity.prototype.kill = function() {
   this.killing = true
 }
 
-},{"events":2,"inherits":16}]},{},[3])
+},{"events":2,"inherits":15}]},{},[3])
 ;
