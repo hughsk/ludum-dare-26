@@ -8,7 +8,7 @@ You can play it [here](http://hughsk.github.io/ludum-dare-26)! Currently
 only been tested on Chrome, but I will be making sure it works at least on
 Firefox.
 
-![https://raw.github.com/hughsk/ludum-dare-26/master/screenshot.png](grow)
+![grow](https://raw.github.com/hughsk/ludum-dare-26/master/screenshot.png)
 
 ## Running Locally ##
 
