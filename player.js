@@ -51,10 +51,10 @@ function Player() {
 
   this.game.on('keyup', function(key) {
     switch (key) {
-      case 'W': self.acc[1] = 0; break
-      case 'A': self.acc[0] = 0; break
-      case 'S': self.acc[1] = 0; break
-      case 'D': self.acc[0] = 0; break
+      case 'W': case '<up>':    self.acc[1] = 0; break
+      case 'A': case '<left>':  self.acc[0] = 0; break
+      case 'S': case '<down>':  self.acc[1] = 0; break
+      case 'D': case '<right>': self.acc[0] = 0; break
     }
   })
 }
